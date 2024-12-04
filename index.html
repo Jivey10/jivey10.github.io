@@ -1,10 +1,91 @@
-<html>
-  <head>
-    <title>Pitch Stats</title>
-  </head>
-  <body>
-    <h1>Trackman Pitch Stats Viewer</h1>
-    <a href="details.html">Pitch 12345</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Data</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <h1>Data Fetch and Display</h1>
+    <table id="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Speed</th>
+                <th>Result</th>
+                <th>Datetime</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dynamic rows will be added here -->
+        </tbody>
+    </table>
+    
+    <script>
+        const dataUrl = "https://compute.samford.edu/zohauth/clients/datajson";
 
-  </body>
+        async function fetchData() {
+            try {
+                const response = await fetch(dataUrl);
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                const data = await response.json();
+                populateTable(data);
+            } catch (error) {
+                console.error("Failed to fetch data:", error);
+            }
+        }
+
+        function populateTable(data) {
+            const tableBody = document.querySelector("#data-table tbody");
+            tableBody.innerHTML = ""; // Clear existing rows
+
+            data.forEach(item => {
+                const row = document.createElement("tr");
+
+                // Create cells for ID, Speed, Result, Datetime
+                const idCell = document.createElement("td");
+                const speedCell = document.createElement("td");
+                const resultCell = document.createElement("td");
+                const datetimeCell = document.createElement("td");
+
+                // Assign data to cells
+                idCell.innerHTML = `<a href="details.html">${item.id}</a>`;
+                speedCell.textContent = item.speed || "--";
+                resultCell.textContent = item.result || "--";
+                datetimeCell.textContent = item.datetime || "--";
+
+                // Append cells to row
+                row.appendChild(idCell);
+                row.appendChild(speedCell);
+                row.appendChild(resultCell);
+                row.appendChild(datetimeCell);
+
+                // Append row to table body
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Fetch and populate data on page load
+        fetchData();
+    </script>
+</body>
 </html>
