@@ -20,6 +20,10 @@
         th {
             background-color: #f4f4f4;
         }
+        tfoot {
+            font-weight: bold;
+            background-color: #f9f9f9;
+        }
     </style>
 </head>
 <body>
@@ -36,6 +40,11 @@
         <tbody>
             <!-- Dynamic rows will be added here -->
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" id="statistics"></td>
+            </tr>
+        </tfoot>
     </table>
     
     <script>
@@ -49,6 +58,7 @@
                 }
                 const data = await response.json();
                 populateTable(data);
+                calculateStatistics(data.map(item => item.speed).filter(speed => !isNaN(speed)));
             } catch (error) {
                 console.error("Failed to fetch data:", error);
             }
@@ -82,6 +92,41 @@
                 // Append row to table body
                 tableBody.appendChild(row);
             });
+        }
+
+        function calculateStatistics(speeds) {
+            if (speeds.length === 0) return;
+
+            const mean = speeds.reduce((a, b) => a + b, 0) / speeds.length;
+
+            const sortedSpeeds = [...speeds].sort((a, b) => a - b);
+            const middle = Math.floor(sortedSpeeds.length / 2);
+            const median = sortedSpeeds.length % 2 === 0
+                ? (sortedSpeeds[middle - 1] + sortedSpeeds[middle]) / 2
+                : sortedSpeeds[middle];
+
+            const modeMap = {};
+            let maxFreq = 0;
+            let mode = [];
+            for (const num of speeds) {
+                modeMap[num] = (modeMap[num] || 0) + 1;
+                if (modeMap[num] > maxFreq) {
+                    maxFreq = modeMap[num];
+                    mode = [num];
+                } else if (modeMap[num] === maxFreq) {
+                    mode.push(num);
+                }
+            }
+
+            const modeDisplay = [...new Set(mode)].join(", ");
+
+            const statsElement = document.querySelector("#statistics");
+            statsElement.innerHTML = `
+                <strong>Speed Statistics:</strong> 
+                Mean = ${mean.toFixed(2)}, 
+                Median = ${median}, 
+                Mode = ${modeDisplay || "None"}
+            `;
         }
 
         // Fetch and populate data on page load
